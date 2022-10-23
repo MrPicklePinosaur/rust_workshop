@@ -1,0 +1,112 @@
+#+title: CSC Project Program Rust Workshop
+#+author: Daniel Liu
+
+* Preamble
+
+Slides are avaliable on github in the form of an org mode document
+
+* Why Rust
+
+#+begin_src rust
+  fn main() {
+      println!("hello from rust!");
+  }
+#+end_src
+
+#+RESULTS:
+: hello from rust!
+
+** Safe
+
+borrow checker ensures memory safety
+
+** Fast
+
+llvm backend for compiler optimization
+
+** Compile time over run time
+
+rust attempts to move as many things as possible to compile time, so the compiler can catch mistakes much faster
+
+** Well integrated developer experience
+
+Great developer experience, with official tools for testing, linting, language server support, documentation generation and much more
+
+** It's fun to write
+
+* Downsides of rust
+
+** compile time
+
+much more complicated compile process results in longer compile times
+
+** huge footprint
+
+the target directory can get very large very fast
+
+* What are we making
+
+cli application
+
+* Installation
+
+We can use `rustup` to install and manage rust toolchains and additional components like an rust-analyzer (an LSP), cross-compilation targets and clippy (linter).
+
+From the terminal we can run:
+#+begin_src sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+#+end_src
+
+And follow the on screen instructions.
+
+
+* Basic tools
+
+** rustc
+
+the rust compiler
+
+** cargo
+
+package manager
+
+** clippy
+
+linter
+
+* Project creation
+
+#+begin_src sh
+cargo new <my_project>
+#+end_src
+
+* Projcet structure
+
+<my_project>/
+├── Cargo.lock
+├── Cargo.toml
+├── src
+│   └── main.rs
+└── target
+
+- Cargo.lock contains information about dependencies, we normally don't touch this file.
+- Cargo.toml contains general package information, project configuration and dependencies.
+- src/ is the directory for your source code
+- target/ is the build directory for binaries and documentation
+
+** Let's add some information to Cargo.toml
+
+#+begin_src yaml
+[package]
+name = "<my_project>"
+version = "0.1.0"
+edition = "2021"
+authors = ["<your_name>"]
+description = "<description>"
+repository = "<repo_link>"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+#+end_src
+
+* Compiling and running the project
