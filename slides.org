@@ -3,14 +3,25 @@
 
 * Preamble
 
+** Structure of this workshop
+
+Will walk through creating a simple library for creating CLIs while
+walking through rust basics. You do not need to follow along.
+
+After we will use this library to build your very own CLI. You are
+encouraged to follow along for this part.
+
+** Where slides at
+
 Slides are avaliable on github in the form of an org mode document
+(basically md).
 
 * Why Rust
 
 #+begin_src rust
-  fn main() {
-      println!("hello from rust!");
-  }
+fn main() {
+    println!("hello from rust!");
+}
 #+end_src
 
 #+RESULTS:
@@ -26,11 +37,13 @@ llvm backend for compiler optimization
 
 ** Compile time over run time
 
-rust attempts to move as many things as possible to compile time, so the compiler can catch mistakes much faster
+rust attempts to move as many things as possible to compile time, so
+the compiler can catch mistakes much faster
 
 ** Well integrated developer experience
 
-Great developer experience, with official tools for testing, linting, language server support, documentation generation and much more
+Great developer experience, with official tools for testing, linting,
+language server support, documentation generation and much more
 
 ** It's fun to write
 
@@ -110,3 +123,279 @@ license = "MIT OR Apache-2.0"
 #+end_src
 
 * Compiling and running the project
+
+Only builds your project
+#+begin_src sh
+cargo build
+#+end_src
+
+Checks if your project compiles properly (faster to run than cargo build)
+#+begin_src sh
+cargo check
+#+end_src
+
+Compiles and runs your project
+#+begin_src sh
+cargo run
+#+end_src
+
+* What are we making?
+
+argparsing library
+
+* 1. Hello world
+
+#+begin_src rust
+  fn main() {
+      println!("hello from rust!");
+  }
+#+end_src
+
+What's new
+- `main` function
+- `println!` macro
+
+* 2. Get environment variables
+
+#+begin_src rust
+  fn main() {
+      let args: Vec<String> = std::env::args().collect();
+      println!("environment variables {:?}", args);
+  }
+#+end_src
+
+#+RESULTS:
+: environment variables ["target/debug/cargoD8PlFq"]
+
+What's new
+- Variable declaration with let, followed with type declaration (can import modules using `use` keyword)
+- Namespacing (with modules), using `::`
+- `args()` returns an iterator (more on this later)
+- Can use templating syntax inside `println!`
+
+* 3. Structs
+
+#+begin_src rust
+  pub struct Cli {
+      pub program_name: String,
+  }
+
+  fn main() {
+      let args: Vec<String> = std::env::args().collect();
+      println!("environment variables {:?}", args);
+
+      let my_cli = Cli {
+	  program_name: "my program".to_string(),
+      };
+  }
+#+end_src
+
+#+RESULTS:
+: environment variables ["target/debug/cargoczvGEu"]
+
+What's new
+- Defining structs with fields
+- Visibility (private by default, `pub` keyword)
+- Why `to_string()`? (`String` type vs `&str`)
+
+* 4. Functions on structs
+
+#+begin_src rust
+  pub struct Cli {
+      pub program_name: String,
+  }
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) {
+	  println!("[{}] {:?}", self.program_name, args);
+      }
+  }
+
+  fn main() {
+      let args = std::env::args().collect::<Vec<String>>();
+
+      let my_cli = Cli {
+	  program_name: "my program".to_string(),
+      };
+      my_cli.run(&args);
+  }
+#+end_src
+
+#+RESULTS:
+: [my program] ["target/debug/cargoczvGEu"]
+
+What's new
+- `impl` block
+- Taking `self` as an argument
+- References
+- Why no type annotation on `my_cli`? (turbofish provides explicit type for generic function)
+
+* 5. If and match
+
+#+begin_src rust
+  pub struct Cli {
+      pub program_name: String,
+  }
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) {
+	  let mut arg_it = args.iter();
+
+	  if let Some(program_name) = arg_it.next() {
+	      println!("program name is {}", program_name); 
+	  } else {
+	      println!("uh oh, we did not get a program name");
+	  }
+
+	  /*
+	  // ====== alternatively ======
+	  match arg_it.next() {
+	      Some(program_name) => {
+		  println!("program name is {}", program_name); 
+	      },
+	      None => println!("uh oh, we did not get a program name");
+	      _ => unreachable!();
+	  }
+	  ,*/
+      }
+  }
+
+  fn main() {
+      let args = std::env::args().collect::<Vec<String>>();
+
+      let my_cli = Cli {
+	  program_name: "my program".to_string(),
+      };
+      my_cli.run(&args);
+  }
+#+end_src
+
+What's new
+- `mut` keyword
+- `if let` statement
+- `match` statement (`_` for catchall)
+- `Option` type
+
+* 6. Error handling
+
+#+begin_src rust
+  pub struct Cli {
+      pub program_name: String,
+  }
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+	  let mut arg_it = args.iter();
+
+	  // this is an Option type, but we want Result type
+	  arg_it.next();
+
+	  Ok(())
+      }
+  }
+
+  fn main() {
+      let args = std::env::args().collect::<Vec<String>>();
+
+      let my_cli = Cli {
+	  program_name: "my program".to_string(),
+      };
+      my_cli.run(&args).unwrap();
+  }
+#+end_src
+
+#+RESULTS:
+
+What's new
+- `Result` type (don't worry about the `Box` yet, it's a place holder error type)
+- `unwrap` asserts that an `Option` is `Some(_)`, and a `Result` is `Ok(_)` (best practice is to never use `unwrap`)
+
+* 7. Side Adventure: Implementing our own Error type
+
+#+begin_src rust
+
+  #[derive(Debug)]
+  pub enum CliError {
+      NoProgramName,
+  }
+
+  impl std::error::Error for CliError {}
+
+  impl std::fmt::Display for CliError {
+      fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+	  match self {
+	      Self::NoProgramName => write!(f, "Program name not supplied"),
+	  }
+      }
+  }
+#+end_src
+
+#+RESULTS:
+
+What's new
+- `enum` keyword (rust enums are very power - we will explore them a bit more later)
+- Match on enum (more example of `match`'s power
+- Traits (inheritence/interfaces but a bit different) and implementing traits
+- `write!` is very similar to `println!()`, but to a specified output 'stream'
+- `#[derive(Debug)]` is example of a derive macro, it auto generates the code to implement the `Debug` trait
+
+* 8. Using our Error type
+
+#+begin_src rust
+  #[derive(Debug)]
+  pub enum CliError {
+      NoProgramName,
+  }
+
+  impl std::error::Error for CliError {}
+
+  impl std::fmt::Display for CliError {
+      fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+	  match self {
+	      Self::NoProgramName => write!(f, "Program name not supplied"),
+	  }
+      }
+  }
+
+  pub struct Cli {
+      pub program_name: String,
+  }
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
+	  let mut arg_it = args.iter();
+	  arg_it.next().ok_or(CliError::NoProgramName)?;
+
+	  Ok(())
+      }
+  }
+
+  fn main() {
+      let args = std::env::args().collect::<Vec<String>>();
+
+      let my_cli = Cli {
+	  program_name: "my program".to_string(),
+      };
+      my_cli.run(&args).unwrap();
+  }
+#+end_src
+
+#+RESULTS:
+
+What's new
+- `ok_or` transforms an `Option` type to a `Result` type
+- `?` operator propogates errors (unwrap or return error)
+
+# topics to cover =====
+# - println macro
+# - tests
+# - if and match statements (maybe also if let)
+# - loops + iterators
+# - functions and mutability
+# - structs and impl
+# - enums
+# - traits (implement custom error type)
+# - modules
+#
+# maybe
+# - docs.rs
