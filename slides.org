@@ -27,39 +27,17 @@ fn main() {
 #+RESULTS:
 : hello from rust!
 
-** Safe
-
-borrow checker ensures memory safety
-
-** Fast
-
-llvm backend for compiler optimization
-
-** Compile time over run time
-
-rust attempts to move as many things as possible to compile time, so
-the compiler can catch mistakes much faster
-
-** Well integrated developer experience
-
-Great developer experience, with official tools for testing, linting,
-language server support, documentation generation and much more
-
-** It's fun to write
+- safe: borrow checker ensures memory safety
+- (blazenly) fast: llvm backend for compiler optimization
+- compile time chceks: rust attempts to move as many things as possible to compile time, so the compiler can catch mistakes much faster
+- developer tooling: great developer experience, with official tools for testing, linting, language server support, documentation generation and much more
+- cross-platofrm
+- fun to write
 
 * Downsides of rust
 
-** compile time
-
-much more complicated compile process results in longer compile times
-
-** huge footprint
-
-the target directory can get very large very fast
-
-* What are we making
-
-cli application
+- compilation time: much more complicated compile process results in longer compile times
+- huge footprint: the target directory can get very large very fast
 
 * Installation
 
@@ -72,30 +50,21 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 And follow the on screen instructions.
 
-
 * Basic tools
 
-** rustc
-
-the rust compiler
-
-** cargo
-
-package manager
-
-** clippy
-
-linter
+- rustc: the rust compiler
+- cargo: package manager
+- clippy: linter
 
 * Project creation
 
 #+begin_src sh
-cargo new <my_project>
+cargo new argparse
 #+end_src
 
 * Projcet structure
 
-<my_project>/
+argparse
 ├── Cargo.lock
 ├── Cargo.toml
 ├── src
@@ -111,12 +80,12 @@ cargo new <my_project>
 
 #+begin_src yaml
 [package]
-name = "<my_project>"
+name = "argparse"
 version = "0.1.0"
 edition = "2021"
-authors = ["<your_name>"]
-description = "<description>"
-repository = "<repo_link>"
+authors = ["Daniel Liu"]
+description = "simple argparser created for CSC rust workshop"
+repository = "https://github.com/MrPicklePinosaur/rust_workshop"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
@@ -279,6 +248,8 @@ What's new
 * 6. Error handling
 
 #+begin_src rust
+  // Does not compile
+
   pub struct Cli {
       pub program_name: String,
   }
@@ -287,8 +258,13 @@ What's new
       pub fn run(&self, args: &Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	  let mut arg_it = args.iter();
 
-	  // this is an Option type, but we want Result type
-	  arg_it.next();
+	  let program_name = match arg_it.next() {
+	      Some(program_name) => program_name,
+	      None => {
+		  // What should we fill '...' with?
+		  return Err(...);
+	      }
+	  }
 
 	  Ok(())
       }
@@ -305,10 +281,13 @@ What's new
 #+end_src
 
 #+RESULTS:
+: error: Could not compile `cargoRbo0YB`.
 
 What's new
 - `Result` type (don't worry about the `Box` yet, it's a place holder error type)
 - `unwrap` asserts that an `Option` is `Some(_)`, and a `Result` is `Ok(_)` (best practice is to never use `unwrap`)
+
+Is there an easier way to convert from an `Option` to a `Result`?
 
 * 7. Side Adventure: Implementing our own Error type
 
@@ -336,7 +315,7 @@ What's new
 - `enum` keyword (rust enums are very power - we will explore them a bit more later)
 - Match on enum (more example of `match`'s power
 - Traits (inheritence/interfaces but a bit different) and implementing traits
-- `write!` is very similar to `println!()`, but to a specified output 'stream'
+- `write!()` is very similar to `println!()`, but to a specified output 'stream'
 - `#[derive(Debug)]` is example of a derive macro, it auto generates the code to implement the `Debug` trait
 
 * 8. Using our Error type
@@ -386,6 +365,369 @@ What's new
 - `ok_or` transforms an `Option` type to a `Result` type
 - `?` operator propogates errors (unwrap or return error)
 
+* 9. Adding Flags
+
+#+begin_src rust
+  //! Simple argument parsing library created for CSC rust workshop
+
+  /// Main driver for cli parsing
+  pub struct Cli {
+      /// Name of the command line application. This will be used in help messages
+      pub program_name: String,
+      /// List of flags to parse
+      pub flags: Vec<Flag>,
+  }
+
+  /// Description for parseable flag
+  pub struct Flag {
+      /// Help message output for this flag
+      pub help: String,
+      /// Is the flag is required to be passed
+      pub required: bool,
+      /// Mandatory long flag identifier. For example `--verbose`
+      pub long: String,
+      /// Optional short flag identifier. For example `-v`
+      pub short: Option<char>,
+  }
+
+  impl Flag {
+      /// Create a new flag object
+      pub fn new(long: String) -> Self {
+	  Flag {
+	      help: String::new(),
+	      required: false,
+	      long,
+	      short: None,
+	  }
+      }
+  }
+#+end_src
+
+#+RESULTS:
+
+What's new
+- Doc strings
+- Struct field ellision (`long` instead of `long: long`)
+
+* 10. Builder pattern
+
+#+begin_src rust
+
+  pub struct FlagBuilder {
+      pub help: Option<String>,
+      pub required: Option<bool>,
+      pub long: String
+      pub short: Option<char>,
+  }
+
+  pub struct Flag {
+      pub help: String,
+      pub required: bool,
+      pub long: String
+      pub short: Option<char>,
+  }
+
+  impl FlagBuilder {
+      pub fn new(long: String) -> Self {
+	  Flag {
+	      help: None,
+	      required: None,
+	      long,
+	      short: None,
+	  }
+      }
+      pub fn help(&mut self, help: String) -> &mut self {
+	  self.help = Some(help);
+	  self
+      }
+      pub fn required(&mut self) -> &mut self {
+	  self.required = Some(true);
+	  self
+      }
+      pub fn short(&mut self, short: char) -> &mut self {
+	  self.short = Some(short);
+	  self
+      }
+  }
+
+  impl Flag {}
+
+  fn main() {
+      let my_flag = FlagBuilder::new("verbose")
+	  .short('v')
+	  .help("enable verbose logging mode")
+	  .required();
+  }
+#+end_src
+  
+What's new
+- Builder pattern
+- Taking `&mut self` as parameter and return type
+
+* 11. Implementing build()
+
+#+begin_src rust
+
+  pub struct FlagBuilder {
+      pub help: Option<String>,
+      pub required: Option<bool>,
+      pub long: String
+      pub short: Option<char>,
+  }
+
+  impl FlagBuilder {
+      pub fn new(long: String) -> Self {
+	  Flag {
+	      help: None,
+	      required: None,
+	      long,
+	      short: None,
+	  }
+      }
+      pub fn build(&self) -> Result<Flag, CliError> {
+	  Ok(Flag {
+	      help: self.help.unwrap_or_default(String::new()),
+	      required: self.required.unwrap_or_default(false),
+	      long: self.long,
+	      short: self.short,
+	  })
+      }
+  }
+
+  fn main() {
+      let flag_1 = FlagBuilder::new("verbose")
+	  .short('v')
+	  .help("enable verbose logging mode")
+	  .required()
+	  .build();
+
+      let flag_2 = FlagBuilder::new("help")
+	  .short('h')
+	  .build();
+  }
+#+end_src
+
+What's new
+- `unwrap_or_default()`
+- What if we want to make something mandatory? Alternative with `new()` taking no parameters
+
+* 12. Using the rust-derive-builder crate
+
+** Reducing boilerplate
+
+This was a relatively simple builder pattern implementation, but it was already quite repetitive.
+
+We can once again use rust macros to help us generate code: https://github.com/colin-kiegel/rust-derive-builder
+
+** Adding dependency too Cargo.toml
+
+#+begin_src yaml
+  [package]
+  name = "argparse"
+  version = "0.1.0"
+  edition = "2021"
+  authors = ["Daniel Liu"]
+  description = "simple argparser created for CSC rust workshop"
+  repository = "https://github.com/MrPicklePinosaur/rust_workshop"
+  license = "MIT OR Apache-2.0"
+
+  [dependencies]
+  rust-derive-builder = { version = "0.11" }
+#+end_src
+
+** Using the crate
+
+#+begin_src rust
+
+  #[macro_use]
+  extern crate derive_builder;
+
+  #[derive(Builder)]
+  pub struct Flag {
+      pub help: String,
+      pub required: bool,
+      pub long: String
+      pub short: Option<char>,
+  }
+
+  fn main() {
+      
+  }
+
+#+end_src
+
+What's new
+- Using crates
+
+* 13. Implementing flag parsing
+
+** Part I: Basic parsing
+
+#+begin_src rust
+
+  #[derive(Default)]
+  pub struct FlagParse {
+      flags: Vec<Flags>,
+      args: Vec<String>,
+  }
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
+	  let mut flagparse = FlagParse::default();
+
+	  let mut arg_it = args.iter();
+	  arg_it.next().ok_or(CliError::NoProgramName)?;
+
+	  for arg in arg_it {
+
+	      // Decide if arg is a long flag, short flag, or a position argument
+	      let flag: Option<&Flag> = if arg.starts_with("--") {
+		  None
+	      } else if arg.starts_with("-") {
+		  None
+	      } else {
+		  flagparse.args.push(arg.to_owned());
+		  continue;
+	      }
+	  }
+
+	  Ok(())
+      }
+  }
+
+#+end_src
+
+#+RESULTS:
+: error: Could not compile `cargopgWXPv`.
+
+What's new
+- `Default` trait
+- Iterators
+- Blocks evaluate a value (continue and the `!` type)
+- `to_owned()`
+
+** Part II: Flag validity
+
+#+begin_src rust
+
+  #[derive(Default)]
+  pub struct FlagParse {
+      flags: Vec<Flags>,
+      args: Vec<String>,
+  }
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
+	  let mut flagparse = FlagParse::default();
+
+	  let mut arg_it = args.iter();
+	  arg_it.next().ok_or(CliError::NoProgramName)?;
+
+	  for arg in arg_it {
+
+	      // Decide if arg is a long flag, short flag, or a position argument
+	      let flag: Option<&Flag> = if arg.starts_with("--") {
+		  self.flags
+		      .iter()
+		      .find(|f| f.long == arg[2..].to_string)
+	      } else if arg.starts_with("-") {
+		  self.flags
+		      .iter()
+		      .find(|f| f.short == arg.chars().nth(1))
+	      } else {
+		  flagparse.args.push(arg.to_owned());
+		  continue;
+	      }
+
+	      let flag: &Flag = if let Some(_flag) = flag {
+		  _flag
+	      } else {
+		  return Err(CliError::InvalidFlag);
+	      }
+
+	      argparse.flags.push(flag);
+	  }
+
+	  Ok(())
+      }
+  }
+
+#+end_src
+
+What's new
+- Iterator operations and lambdas
+- Variable shadowing
+
+** Part III: Error handling
+
+#+begin_src rust
+
+  #[derive(Debug)]
+  pub enum CliError {
+      NoProgramName,
+      InvalidFlag(String),
+  }
+
+  impl std::error::Error for CliError {}
+
+  impl std::fmt::Display for CliError {
+      fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+	  match self {
+	      Self::NoProgramName => write!(f, "Program name not supplied"),
+	      Self::InvalidFlag(v) => write!(f, "Invalid flag value: {}", v)
+	  }
+      }
+  }
+
+  #[derive(Default)]
+  pub struct FlagParse {
+      flags: Vec<Flags>,
+      args: Vec<String>,
+  }
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
+	  let mut flagparse = FlagParse::default();
+
+	  let mut arg_it = args.iter();
+	  arg_it.next().ok_or(CliError::NoProgramName)?;
+
+	  for arg in arg_it {
+
+	      // Decide if arg is a long flag, short flag, or a position argument
+	      let flag: Option<&Flag> = if arg.starts_with("--") {
+		  self.flags
+		      .iter()
+		      .find(|f| f.long == arg[2..].to_string)
+	      } else if arg.starts_with("-") {
+		  self.flags
+		      .iter()
+		      .find(|f| f.short == arg.chars().nth(1))
+	      } else {
+		  flagparse.args.push(arg.to_owned());
+		  continue;
+	      }
+
+	      let flag: &Flag = if let Some(_flag) = flag {
+		  _flag
+	      } else {
+		  return Err(CliError::InvalidFlag(arg.to_owned));
+	      }
+
+	      argparse.flags.push(flag);
+	  }
+
+	  Ok(())
+      }
+  }
+
+#+end_src
+
+What's new
+- Enum can hold values (enums are more like unions)
+
+* 14. We are Done!
+
 # topics to cover =====
 # - println macro
 # - tests
@@ -396,6 +738,15 @@ What's new
 # - enums
 # - traits (implement custom error type)
 # - modules
+# - builder pattern
+# - default trait
+# - into trait
 #
 # maybe
 # - docs.rs
+
+What we did not cover
+- modules
+- generics
+- lifetimes
+- defining your own traits
