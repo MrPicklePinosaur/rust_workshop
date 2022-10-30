@@ -1,0 +1,10 @@
+[package]
+name = "argparse"
+version = "0.1.0"
+edition = "2021"
+authors = ["Daniel Liu"]
+description = "simple argparser created for CSC rust workshop"
+repository = "https://github.com/MrPicklePinosaur/rust_workshop"
+license = "MIT OR Apache-2.0"
+
+[dependencies]

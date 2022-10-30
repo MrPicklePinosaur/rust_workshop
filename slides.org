@@ -19,9 +19,9 @@ Slides are avaliable on github in the form of an org mode document
 * Why Rust
 
 #+begin_src rust
-fn main() {
-    println!("hello from rust!");
-}
+  fn main() {
+      println!("hello from rust!");
+  }
 #+end_src
 
 #+RESULTS:
@@ -108,9 +108,23 @@ Compiles and runs your project
 cargo run
 #+end_src
 
-* What are we making?
+* Concepts we will be covering
 
-argparsing library
+# topics to cover =====
+# - println macro
+# - if and match statements (maybe also if let)
+# - loops + iterators
+# - functions and mutability
+# - structs and impl
+# - enums
+# - traits (implement custom error type)
+# - modules
+# - builder pattern
+# - default trait
+# - into trait
+#
+# maybe
+# - docs.rs
 
 * 1. Hello world
 
@@ -119,6 +133,9 @@ argparsing library
       println!("hello from rust!");
   }
 #+end_src
+
+#+RESULTS:
+: hello from rust!
 
 What's new
 - `main` function
@@ -129,12 +146,12 @@ What's new
 #+begin_src rust
   fn main() {
       let args: Vec<String> = std::env::args().collect();
-      println!("environment variables {:?}", args);
+      println!("arguments {:?}", args);
   }
 #+end_src
 
 #+RESULTS:
-: environment variables ["target/debug/cargoD8PlFq"]
+: environment variables ["target/debug/cargoAwIqt5"]
 
 What's new
 - Variable declaration with let, followed with type declaration (can import modules using `use` keyword)
@@ -151,7 +168,7 @@ What's new
 
   fn main() {
       let args: Vec<String> = std::env::args().collect();
-      println!("environment variables {:?}", args);
+      println!("arguments {:?}", args);
 
       let my_cli = Cli {
 	  program_name: "my program".to_string(),
@@ -160,7 +177,7 @@ What's new
 #+end_src
 
 #+RESULTS:
-: environment variables ["target/debug/cargoczvGEu"]
+: arguments ["target/debug/cargo2VKO7A"]
 
 What's new
 - Defining structs with fields
@@ -191,7 +208,7 @@ What's new
 #+end_src
 
 #+RESULTS:
-: [my program] ["target/debug/cargoczvGEu"]
+: [my program] ["target/debug/cargoHneTZ1"]
 
 What's new
 - `impl` block
@@ -211,7 +228,7 @@ What's new
 	  let mut arg_it = args.iter();
 
 	  if let Some(program_name) = arg_it.next() {
-	      println!("program name is {}", program_name); 
+	      println!("program name is {}", program_name);
 	  } else {
 	      println!("uh oh, we did not get a program name");
 	  }
@@ -220,12 +237,12 @@ What's new
 	  // ====== alternatively ======
 	  match arg_it.next() {
 	      Some(program_name) => {
-		  println!("program name is {}", program_name); 
+	      println!("program name is {}", program_name);
 	      },
 	      None => println!("uh oh, we did not get a program name");
 	      _ => unreachable!();
 	  }
-	  ,*/
+	  */
       }
   }
 
@@ -238,6 +255,9 @@ What's new
       my_cli.run(&args);
   }
 #+end_src
+
+#+RESULTS:
+: program name is target/debug/cargomjZWXu
 
 What's new
 - `mut` keyword
@@ -416,14 +436,14 @@ What's new
   pub struct FlagBuilder {
       pub help: Option<String>,
       pub required: Option<bool>,
-      pub long: String
+      pub long: String,
       pub short: Option<char>,
   }
 
   pub struct Flag {
       pub help: String,
       pub required: bool,
-      pub long: String
+      pub long: String,
       pub short: Option<char>,
   }
 
@@ -436,15 +456,15 @@ What's new
 	      short: None,
 	  }
       }
-      pub fn help(&mut self, help: String) -> &mut self {
+      pub fn help(&mut self, help: String) -> &mut Self {
 	  self.help = Some(help);
 	  self
       }
-      pub fn required(&mut self) -> &mut self {
+      pub fn required(&mut self) -> &mut Self {
 	  self.required = Some(true);
 	  self
       }
-      pub fn short(&mut self, short: char) -> &mut self {
+      pub fn short(&mut self, short: char) -> &mut Self {
 	  self.short = Some(short);
 	  self
       }
@@ -477,14 +497,14 @@ What's new
 
   impl FlagBuilder {
       pub fn new(long: String) -> Self {
-	  Flag {
+	  FlagBuilder {
 	      help: None,
 	      required: None,
 	      long,
 	      short: None,
 	  }
       }
-      pub fn build(&self) -> Result<Flag, CliError> {
+      pub fn build(self) -> Result<Flag, CliError> {
 	  Ok(Flag {
 	      help: self.help.unwrap_or_default(String::new()),
 	      required: self.required.unwrap_or_default(false),
@@ -510,6 +530,7 @@ What's new
 What's new
 - `unwrap_or_default()`
 - What if we want to make something mandatory? Alternative with `new()` taking no parameters
+- Notice that `build()` takes `self` instead of `&self`
 
 * 12. Using the rust-derive-builder crate
 
@@ -567,7 +588,7 @@ What's new
 
   #[derive(Default)]
   pub struct FlagParse {
-      flags: Vec<Flags>,
+      flags: Vec<Flag>,
       args: Vec<String>,
   }
 
@@ -588,7 +609,7 @@ What's new
 	      } else {
 		  flagparse.args.push(arg.to_owned());
 		  continue;
-	      }
+	      };
 	  }
 
 	  Ok(())
@@ -610,6 +631,14 @@ What's new
 
 #+begin_src rust
 
+  #[derive(Clone)]
+  pub struct Flag {
+      pub help: String,
+      pub required: bool,
+      pub long: String,
+      pub short: Option<char>,
+  }
+
   #[derive(Default)]
   pub struct FlagParse {
       flags: Vec<Flags>,
@@ -629,7 +658,7 @@ What's new
 	      let flag: Option<&Flag> = if arg.starts_with("--") {
 		  self.flags
 		      .iter()
-		      .find(|f| f.long == arg[2..].to_string)
+		      .find(|f| f.long == arg[2..].to_string())
 	      } else if arg.starts_with("-") {
 		  self.flags
 		      .iter()
@@ -637,15 +666,15 @@ What's new
 	      } else {
 		  flagparse.args.push(arg.to_owned());
 		  continue;
-	      }
+	      };
 
 	      let flag: &Flag = if let Some(_flag) = flag {
 		  _flag
 	      } else {
 		  return Err(CliError::InvalidFlag);
-	      }
+	      };
 
-	      argparse.flags.push(flag);
+	      argparse.flags.push(flag.clone());
 	  }
 
 	  Ok(())
@@ -657,6 +686,7 @@ What's new
 What's new
 - Iterator operations and lambdas
 - Variable shadowing
+- Need to add `#[derive(Clone)]` to `Flag` struct (can also use reference with lifetime annotation)
 
 ** Part III: Error handling
 
@@ -679,12 +709,6 @@ What's new
       }
   }
 
-  #[derive(Default)]
-  pub struct FlagParse {
-      flags: Vec<Flags>,
-      args: Vec<String>,
-  }
-
   impl Cli {
       pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
 	  let mut flagparse = FlagParse::default();
@@ -698,7 +722,7 @@ What's new
 	      let flag: Option<&Flag> = if arg.starts_with("--") {
 		  self.flags
 		      .iter()
-		      .find(|f| f.long == arg[2..].to_string)
+		      .find(|f| f.long == arg[2..].to_string())
 	      } else if arg.starts_with("-") {
 		  self.flags
 		      .iter()
@@ -706,15 +730,15 @@ What's new
 	      } else {
 		  flagparse.args.push(arg.to_owned());
 		  continue;
-	      }
+	      };
 
 	      let flag: &Flag = if let Some(_flag) = flag {
 		  _flag
 	      } else {
-		  return Err(CliError::InvalidFlag(arg.to_owned));
-	      }
+		  return Err(CliError::InvalidFlag(arg.to_owned()));
+	      };
 
-	      argparse.flags.push(flag);
+	      flagparse.flags.push(flag);
 	  }
 
 	  Ok(())
@@ -723,30 +747,17 @@ What's new
 
 #+end_src
 
+#+RESULTS:
+: error: Could not compile `cargoZ2zXKP`.
+
 What's new
 - Enum can hold values (enums are more like unions)
 
 * 14. We are Done!
-
-# topics to cover =====
-# - println macro
-# - tests
-# - if and match statements (maybe also if let)
-# - loops + iterators
-# - functions and mutability
-# - structs and impl
-# - enums
-# - traits (implement custom error type)
-# - modules
-# - builder pattern
-# - default trait
-# - into trait
-#
-# maybe
-# - docs.rs
 
 What we did not cover
 - modules
 - generics
 - lifetimes
 - defining your own traits
+- writing tests
