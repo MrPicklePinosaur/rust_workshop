@@ -301,7 +301,7 @@ What's new
 #+end_src
 
 #+RESULTS:
-: error: Could not compile `cargoRbo0YB`.
+: error: Could not compile `cargoYtfxB6`.
 
 What's new
 - `Result` type (don't worry about the `Box` yet, it's a place holder error type)
@@ -449,7 +449,7 @@ What's new
 
   impl FlagBuilder {
       pub fn new(long: String) -> Self {
-	  Flag {
+	  FlagBuilder {
 	      help: None,
 	      required: None,
 	      long,
@@ -473,12 +473,14 @@ What's new
   impl Flag {}
 
   fn main() {
-      let my_flag = FlagBuilder::new("verbose")
+      let my_flag = FlagBuilder::new("verbose".into())
 	  .short('v')
-	  .help("enable verbose logging mode")
+	  .help("enable verbose logging mode".into())
 	  .required();
   }
 #+end_src
+
+#+RESULTS:
   
 What's new
 - Builder pattern
@@ -515,17 +517,20 @@ What's new
   }
 
   fn main() {
-      let flag_1 = FlagBuilder::new("verbose")
+      let flag_1 = FlagBuilder::new("verbose".into())
 	  .short('v')
-	  .help("enable verbose logging mode")
+	  .help("enable verbose logging mode".into())
 	  .required()
 	  .build();
 
-      let flag_2 = FlagBuilder::new("help")
+      let flag_2 = FlagBuilder::new("help".into())
 	  .short('h')
 	  .build();
   }
 #+end_src
+
+#+RESULTS:
+: error: Could not compile `cargoVIdHrI`.
 
 What's new
 - `unwrap_or_default()`
@@ -619,7 +624,7 @@ What's new
 #+end_src
 
 #+RESULTS:
-: error: Could not compile `cargopgWXPv`.
+: error: Could not compile `cargo3p1pL9`.
 
 What's new
 - `Default` trait
@@ -641,7 +646,7 @@ What's new
 
   #[derive(Default)]
   pub struct FlagParse {
-      flags: Vec<Flags>,
+      flags: Vec<Flag>,
       args: Vec<String>,
   }
 
@@ -674,7 +679,7 @@ What's new
 		  return Err(CliError::InvalidFlag);
 	      };
 
-	      argparse.flags.push(flag.clone());
+	      flagparse.flags.push(flag.clone());
 	  }
 
 	  Ok(())
@@ -682,6 +687,9 @@ What's new
   }
 
 #+end_src
+
+#+RESULTS:
+: error: Could not compile `cargoQVHbXo`.
 
 What's new
 - Iterator operations and lambdas
@@ -738,7 +746,7 @@ What's new
 		  return Err(CliError::InvalidFlag(arg.to_owned()));
 	      };
 
-	      flagparse.flags.push(flag);
+	      flagparse.flags.push(flag.clone());
 	  }
 
 	  Ok(())
@@ -753,7 +761,9 @@ What's new
 What's new
 - Enum can hold values (enums are more like unions)
 
-* 14. We are Done!
+* 14. Get info from FlagParse
+
+* We are Done!
 
 What we did not cover
 - modules

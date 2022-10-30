@@ -1,5 +1,6 @@
 //! Simple argument parsing library created for CSC rust workshop
 
+/// Error enum for errors related to argument parsing
 #[derive(Debug)]
 pub enum CliError {
     NoProgramName,
@@ -38,14 +39,20 @@ pub struct Flag {
     pub short: Option<char>,
 }
 
+/// Builder pattern for flag
 pub struct FlagBuilder {
+    /// Help message output for this flag
     pub help: Option<String>,
+    /// Is the flag is required to be passed
     pub required: Option<bool>,
+    /// Mandatory long flag identifier. For example `--verbose`
     pub long: String,
+    /// Optional short flag identifier. For example `-v`
     pub short: Option<char>,
 }
 
 impl FlagBuilder {
+    /// Construct a new FlagBuilder
     pub fn new(long: String) -> Self {
 	FlagBuilder {
 	    help: None,
@@ -66,6 +73,7 @@ impl FlagBuilder {
 	self.short = Some(short);
 	self
     }
+    /// Build the Flag, consuming the FlagBuilder
     pub fn build(self) -> Result<Flag, CliError> {
 	Ok(Flag {
 	    help: self.help.unwrap_or(String::new()),
@@ -76,7 +84,7 @@ impl FlagBuilder {
     }
 }
 
-
+/// Result of argument parsing
 #[derive(Default)]
 pub struct FlagParse {
     flags: Vec<Flag>,
@@ -84,6 +92,7 @@ pub struct FlagParse {
 }
 
 impl Cli {
+    /// Run the configured CLI on given input, producing an output of FlagParse
     pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
 	let mut flagparse = FlagParse::default();
 
