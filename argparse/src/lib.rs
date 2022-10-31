@@ -91,6 +91,19 @@ pub struct FlagParse {
     args: Vec<String>,
 }
 
+impl FlagParse {
+
+    /// Get if flag value was passed
+    pub fn get_flag(&self, long: &str) -> bool {
+	self.flags.iter().find(|f| f.long.eq(long)).is_some()
+    }
+
+    /// Get all the non flag arguments that were passed
+    pub fn args(&self) -> &Vec<String> {
+	&self.args
+    }
+}
+
 impl Cli {
     /// Run the configured CLI on given input, producing an output of FlagParse
     pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
@@ -126,4 +139,9 @@ impl Cli {
 
 	Ok(())
     }
+}
+
+#[cfg(test)]
+mod tests {
+
 }

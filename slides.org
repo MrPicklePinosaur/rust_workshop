@@ -1,9 +1,50 @@
 #+title: CSC Project Program Rust Workshop
 #+author: Daniel Liu
 
-* Preamble
+* A Rusty Workshop
 
-** Structure of this workshop
+
+                       ,--.  ,--.                        
+,--.--.,--.,--. ,---.,-'  '-.|  | ,--,--.,--,--,  ,---.  
+|  .--'|  ||  |(  .-''-.  .-'|  |' ,-.  ||      \| .-. | 
+|  |   '  ''  '.-'  `) |  |  |  |\ '-'  ||  ||  |' '-' ' 
+`--'    `----' `----'  `--'  `--' `--`--'`--''--'.`-  /  
+                                                 `---'   
+                                                                                               
+                                                                   ████      ████              
+                                                                 ██▒▒▒▒██  ▓▓▒▒▒▒▓▓            
+                                                   ██████      ██▒▒░░░░▒▒██▒▒░░▒▒██            
+                                                 ██  ██████    ██▒▒░░░░░░▒▒░░░░▒▒██            
+                             ██████              ██████  ██    ██▒▒░░░░░░░░░░░░▒▒██            
+           ▓▓▓▓            ▓▓  ████▓▓      ▓▓▓▓▓▓██████████▓▓  ██▒▒░░░░░░░░░░░░▒▒██            
+         ▓▓▒▒██      ████  ██████░░██▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▓▓██▒▒░░░░░░░░░░░░▒▒██            
+       ██▒▒░░▒▒██  ██▒▒██  ██████████▒▒▒▒▒▒░░░░░░            ▒▒▒▒██▒▒░░░░░░░░▒▒██              
+     ██▒▒░░  ░░▒▒██▒▒▒▒██    ████▒▒▒▒░░░░░░░░░░░░░░░░░░░░░░      ▒▒██▒▒▒▒▒▒▒▒██                
+     ██▒▒░░░░░░░░▒▒░░▒▒██  ▓▓▒▒▒▒░░░░░░░░▒▒░░░░▒▒░░░░░░░░          ▒▒████████                  
+     ██▒▒░░░░░░░░░░░░▒▒████▒▒░░░░░░░░░░▒▒██▒▒▒▒██▒▒░░░░░░        ░░  ▒▒██                      
+     ██▒▒░░░░░░░░░░░░▒▒██▒▒░░    ░░░░░░▒▒██▒▒▒▒██▒▒░░░░░░░░      ░░  ▒▒██▓▓▓▓▓▓                
+       ▓▓▒▒▒▒░░░░░░░░▒▒██▒▒      ░░░░░░░░▒▒▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░░░  ░░▒▒██▒▒▒▒▓▓              
+         ████▒▒▒▒▒▒▒▒██▒▒▒▒      ░░░░░░░░░░▒▒▒▒▒▒██████████▒▒░░░░░░░░  ▒▒██▒▒▒▒██              
+             ██████████▒▒      ░░░░░░░░░░▒▒██████░░░░░░░░  ██▒▒░░░░░░  ▒▒██████                
+                     ██▒▒░░░░░░░░░░░░░░▒▒██░░░░░░░░░░██████░░██▒▒░░░░  ▒▒██                    
+               ████████▒▒░░░░░░░░░░░░▒▒██░░░░░░██████░░░░░░░░██▒▒░░    ▒▒██                    
+             ▒▒▒▒▒▒▒▒██▒▒░░░░░░░░░░▒▒▓▓██▓▓▒▒▒▒░░░░░░░░░░░░░░░░▓▓▒▒  ░░▓▓▒▒▒▒▒▒                
+             ██▒▒▒▒▒▒██▒▒░░░░░░░░░░▒▒██░░░░░░░░░░░░░░░░░░░░░░░░██▒▒  ▒▒██▒▒▒▒▒▒▓▓              
+               ████████▒▒░░░░░░░░░░▒▒██░░░░░░░░░░░░░░░░██████████▒▒  ▒▒██▒▒▒▒▒▒██              
+                       ▓▓▒▒░░░░░░▒▒▓▓░░░░░░░░▓▓▓▓▓▓▓▓▓▓░░░░░░░░██▒▒▒▒▓▓██████▓▓                
+                     ████▒▒░░░░░░▒▒██████████░░░░░░░░░░░░░░░░░░██▒▒██                          
+                   ▓▓▒▒▒▒██▒▒▒▒▒▒▒▒██░░░░░░░░░░░░░░░░░░░░░░░░██████                            
+                   ██▒▒▒▒▒▒██████▒▒██░░░░░░░░░░░░░░░░████████                                  
+                   ████████      ████████████████████                                          
+                                                                                               
+                                                                                               
+                                                                                               
+                                                                                               
+                                                                                               
+                                                                                               
+                                                                                               
+
+* Structure of this workshop
 
 Will walk through creating a simple library for creating CLIs while
 walking through rust basics. You do not need to follow along.
@@ -11,10 +52,10 @@ walking through rust basics. You do not need to follow along.
 After we will use this library to build your very own CLI. You are
 encouraged to follow along for this part.
 
-** Where slides at
+* Where slides at
 
-Slides are avaliable on github in the form of an org mode document
-(basically md).
+Slides are avaliable on github at (https://github.com/MrPicklePinosaur/rust_workshop)
+in the form of an org mode document (basically md).
 
 * Why Rust
 
@@ -29,8 +70,10 @@ Slides are avaliable on github in the form of an org mode document
 
 - safe: borrow checker ensures memory safety
 - (blazenly) fast: llvm backend for compiler optimization
-- compile time chceks: rust attempts to move as many things as possible to compile time, so the compiler can catch mistakes much faster
-- developer tooling: great developer experience, with official tools for testing, linting, language server support, documentation generation and much more
+- compile time chceks: rust attempts to move as many things as possible to
+  compile time, so the compiler can catch mistakes much faster
+- developer tooling: great developer experience, with official tools for testing,
+  linting, language server support, documentation generation and much more
 - cross-platofrm
 - fun to write
 
@@ -41,7 +84,9 @@ Slides are avaliable on github in the form of an org mode document
 
 * Installation
 
-We can use `rustup` to install and manage rust toolchains and additional components like an rust-analyzer (an LSP), cross-compilation targets and clippy (linter).
+We can use `rustup` to install and manage rust toolchains and
+additional components like an rust-analyzer (an LSP),
+cross-compilation targets and clippy (linter).
 
 From the terminal we can run:
 #+begin_src sh
@@ -55,6 +100,7 @@ And follow the on screen instructions.
 - rustc: the rust compiler
 - cargo: package manager
 - clippy: linter
+- rustfmt: rust code formatter
 
 * Project creation
 
@@ -110,21 +156,19 @@ cargo run
 
 * Concepts we will be covering
 
-# topics to cover =====
-# - println macro
-# - if and match statements (maybe also if let)
-# - loops + iterators
-# - functions and mutability
-# - structs and impl
-# - enums
-# - traits (implement custom error type)
-# - modules
-# - builder pattern
-# - default trait
-# - into trait
-#
-# maybe
-# - docs.rs
+Topics to cover
+- println macro
+- structs and methods on structs
+- visibility
+- if, if let and match statements
+- ownership
+- mutability
+- implemting traits
+- enums
+- Result and Option types
+- builder pattern
+- using crates
+- loops + iterators
 
 * 1. Hello world
 
@@ -508,8 +552,8 @@ What's new
       }
       pub fn build(self) -> Result<Flag, CliError> {
 	  Ok(Flag {
-	      help: self.help.unwrap_or_default(String::new()),
-	      required: self.required.unwrap_or_default(false),
+	      help: self.help.unwrap_or(String::new()),
+	      required: self.required.unwrap_or(false),
 	      long: self.long,
 	      short: self.short,
 	  })
@@ -530,10 +574,10 @@ What's new
 #+end_src
 
 #+RESULTS:
-: error: Could not compile `cargoVIdHrI`.
+: error: Could not compile `cargoUp9fyP`.
 
 What's new
-- `unwrap_or_default()`
+- `unwrap_or()`
 - What if we want to make something mandatory? Alternative with `new()` taking no parameters
 - Notice that `build()` takes `self` instead of `&self`
 
@@ -574,10 +618,6 @@ We can once again use rust macros to help us generate code: https://github.com/c
       pub required: bool,
       pub long: String
       pub short: Option<char>,
-  }
-
-  fn main() {
-      
   }
 
 #+end_src
@@ -762,6 +802,29 @@ What's new
 - Enum can hold values (enums are more like unions)
 
 * 14. Get info from FlagParse
+
+#+begin_src rust
+  #[derive(Default)]
+  pub struct FlagParse {
+      flags: Vec<Flag>,
+      args: Vec<String>,
+  }
+
+  impl FlagParse {
+
+      pub fn get_flag(&self, long: &str) -> bool {
+	  self.flags.iter().find(|f| f.long.eq(long)).is_some()
+      }
+
+      pub fn args(&self) -> &Vec<String> {
+	  &self.args
+      }
+
+  }
+#+end_src
+
+#+RESULTS:
+: error: Could not compile `cargokNbdNb`.
 
 * We are Done!
 
