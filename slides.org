@@ -74,7 +74,7 @@ in the form of an org mode document (basically md).
   compile time, so the compiler can catch mistakes much faster
 - developer tooling: great developer experience, with official tools for testing,
   linting, language server support, documentation generation and much more
-- cross-platofrm
+- cross-platform
 - fun to write
 
 * Downsides of rust
