@@ -198,9 +198,6 @@ What's new
   }
 #+end_src
 
-#+RESULTS:
-: environment variables ["target/debug/cargoAwIqt5"]
-
 What's new
 - Variable declaration with let, followed with type declaration (can import modules using `use` keyword)
 - Namespacing (with modules), using `::`
@@ -225,9 +222,6 @@ What's new
       };
   }
 #+end_src
-
-#+RESULTS:
-: arguments ["target/debug/cargo2VKO7A"]
 
 What's new
 - Defining structs with fields
@@ -258,9 +252,6 @@ What's new
       my_cli.run(&args);
   }
 #+end_src
-
-#+RESULTS:
-: [my program] ["target/debug/cargoHneTZ1"]
 
 What's new
 - `impl` block
@@ -395,9 +386,6 @@ What's new
   }
 #+end_src
 
-#+RESULTS:
-: error: Could not compile `cargoYtfxB6`.
-
 What's new
 - Blocks have return values
 - `Result` type
@@ -430,8 +418,6 @@ Is there an easier way to convert from an `Option` to a `Result`?
       println!("This is the display formatter: {}", my_error);
   }
 #+end_src
-
-#+RESULTS:
 
 What's new
 - Traits (inheritence/interfaces but a bit different) and implementing traits
@@ -562,8 +548,6 @@ What's new
   }
 #+end_src
 
-#+RESULTS:
-
 What's new
 - Doc strings
 - Struct field ellision (`long` instead of `long: long`)
@@ -595,15 +579,15 @@ What's new
 	      short: None,
 	  }
       }
-      pub fn help(&mut self, help: String) -> &mut Self {
+      pub fn help(mut self, help: String) -> Self {
 	  self.help = Some(help);
 	  self
       }
-      pub fn required(&mut self) -> &mut Self {
+      pub fn required(mut self) -> Self {
 	  self.required = Some(true);
 	  self
       }
-      pub fn short(&mut self, short: char) -> &mut Self {
+      pub fn short(mut self, short: char) -> Self {
 	  self.short = Some(short);
 	  self
       }
@@ -619,8 +603,6 @@ What's new
   }
 #+end_src
 
-#+RESULTS:
-  
 What's new
 - Builder pattern
 - Taking `&mut self` as parameter and return type
@@ -628,7 +610,9 @@ What's new
 * 11. Implementing build()
 
 #+begin_src rust
+  /// 11.rs
 
+  #[derive(Debug)]
   pub struct FlagBuilder {
       pub help: Option<String>,
       pub required: Option<bool>,
@@ -659,22 +643,25 @@ What's new
       let flag_1 = FlagBuilder::new("verbose".into())
 	  .short('v')
 	  .help("enable verbose logging mode".into())
-	  .required()
-	  .build();
+	  .required();
 
-      let flag_2 = FlagBuilder::new("help".into())
+      println!("flag_1: {:?}", flag_1);
+
+      let flag_1_built = flag_1.build();
+
+      println!("flag_1_built: {:?}", flag_1_built);
+
+      let flag_2_built = FlagBuilder::new("help".into())
 	  .short('h')
 	  .build();
+
+      println!("flag_2_built: {:?}", flag_2_built);
   }
 #+end_src
-
-#+RESULTS:
-: error: Could not compile `cargoUp9fyP`.
 
 What's new
 - `unwrap_or()`
 - What if we want to make something mandatory? Alternative with `new()` taking no parameters
-- Notice that `build()` takes `self` instead of `&self`
 
 * 12. Using the rust-derive-builder crate
 
@@ -684,7 +671,7 @@ This was a relatively simple builder pattern implementation, but it was already 
 
 We can once again use rust macros to help us generate code: https://github.com/colin-kiegel/rust-derive-builder
 
-** Adding dependency too Cargo.toml
+** Adding dependency to Cargo.toml
 
 #+begin_src yaml
   [package]
@@ -725,180 +712,162 @@ What's new
 ** Part I: Basic parsing
 
 #+begin_src rust
+  /// 13a.rs 
 
-  #[derive(Default)]
+  #[derive(Default, Debug)]
   pub struct FlagParse {
       flags: Vec<Flag>,
       args: Vec<String>,
   }
 
   impl Cli {
-      pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
+      pub fn run(&self, args: &Vec<String>) -> Result<FlagParse, CliError> {
 	  let mut flagparse = FlagParse::default();
 
 	  let mut arg_it = args.iter();
+
+	  // skip first item
 	  arg_it.next().ok_or(CliError::NoProgramName)?;
 
 	  for arg in arg_it {
-
-	      // Decide if arg is a long flag, short flag, or a position argument
-	      let flag: Option<&Flag> = if arg.starts_with("--") {
-		  None
-	      } else if arg.starts_with("-") {
-		  None
-	      } else {
-		  flagparse.args.push(arg.to_owned());
-		  continue;
-	      };
+	      println!("argument {}", arg);
 	  }
 
-	  Ok(())
+	  Ok(flagparse)
       }
   }
 
-#+end_src
+  fn main() {
+      let args: Vec<String> = std::env::args().collect();
 
-#+RESULTS:
-: error: Could not compile `cargo3p1pL9`.
+      let cli = Cli {
+	  program_name: "my cli".to_string(),
+	  flags: vec![
+	      FlagBuilder::new("verbose".into())
+		  .short('v')
+		  .help("enable verbose logging mode".into())
+		  .required()
+		  .build()
+		  .unwrap(),
+	      FlagBuilder::new("help".into()).short('h').build().unwrap(),
+	  ],
+      };
+
+      let flagparse = cli.run(&args).unwrap();
+      println!("{:?}", flagparse);
+  }
+
+#+end_src
 
 What's new
 - `Default` trait
 - Iterators
-- Blocks evaluate a value (continue and the `!` type)
-- `to_owned()`
+- `vec!` macro
+- `unwrap()`
 
-** Part II: Flag validity
+** Part II: Type of argument
 
 #+begin_src rust
-
-  #[derive(Clone)]
-  pub struct Flag {
-      pub help: String,
-      pub required: bool,
-      pub long: String,
-      pub short: Option<char>,
-  }
-
-  #[derive(Default)]
-  pub struct FlagParse {
-      flags: Vec<Flag>,
-      args: Vec<String>,
-  }
+  /// 13b.rs
 
   impl Cli {
-      pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
+      pub fn run(&self, args: &Vec<String>) -> Result<FlagParse, CliError> {
 	  let mut flagparse = FlagParse::default();
 
 	  let mut arg_it = args.iter();
+
+	  // skip first item
 	  arg_it.next().ok_or(CliError::NoProgramName)?;
 
 	  for arg in arg_it {
 
 	      // Decide if arg is a long flag, short flag, or a position argument
 	      let flag: Option<&Flag> = if arg.starts_with("--") {
-		  self.flags
-		      .iter()
-		      .find(|f| f.long == arg[2..].to_string())
+		  println!("We found a short flag");
+                  self.flags.iter().find(|f| f.long == arg[2..].to_string())
 	      } else if arg.starts_with("-") {
-		  self.flags
-		      .iter()
-		      .find(|f| f.short == arg.chars().nth(1))
+		  println!("We found a long flag");
+		  self.flags.iter().find(|f| f.short == arg.chars().nth(1))
 	      } else {
+		  println!("We found an argument");
 		  flagparse.args.push(arg.to_owned());
 		  continue;
 	      };
-
-	      let flag: &Flag = if let Some(_flag) = flag {
-		  _flag
-	      } else {
-		  return Err(CliError::InvalidFlag);
-	      };
-
-	      flagparse.flags.push(flag.clone());
 	  }
 
-	  Ok(())
+	  println!("value of flag: {:?}", flag);
+
+	  Ok(flagparse)
       }
   }
 
 #+end_src
 
-#+RESULTS:
-: error: Could not compile `cargoQVHbXo`.
-
 What's new
-- Iterator operations and lambdas
-- Variable shadowing
-- Need to add `#[derive(Clone)]` to `Flag` struct (can also use reference with lifetime annotation)
+- `continue` keyword
+- the never (`!`) type
 
 ** Part III: Error handling
 
 #+begin_src rust
+  /// 13c.rs
 
   #[derive(Debug)]
   pub enum CliError {
       NoProgramName,
+      NoArgument,
       InvalidFlag(String),
   }
-
-  impl std::error::Error for CliError {}
 
   impl std::fmt::Display for CliError {
       fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 	  match self {
 	      Self::NoProgramName => write!(f, "Program name not supplied"),
-	      Self::InvalidFlag(v) => write!(f, "Invalid flag value: {}", v)
+	      Self::NoArgument => write!(f, "Argument not supplied"),
+	      Self::InvalidFlag(v) => write!(f, "Invalid flag: {}", v),
 	  }
       }
   }
 
   impl Cli {
-      pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
+      pub fn run(&self, args: &Vec<String>) -> Result<FlagParse, CliError> {
 	  let mut flagparse = FlagParse::default();
 
 	  let mut arg_it = args.iter();
+
+	  // skip first item
 	  arg_it.next().ok_or(CliError::NoProgramName)?;
 
 	  for arg in arg_it {
-
 	      // Decide if arg is a long flag, short flag, or a position argument
 	      let flag: Option<&Flag> = if arg.starts_with("--") {
-		  self.flags
-		      .iter()
-		      .find(|f| f.long == arg[2..].to_string())
+		  self.flags.iter().find(|f| f.long == arg[2..].to_string())
 	      } else if arg.starts_with("-") {
-		  self.flags
-		      .iter()
-		      .find(|f| f.short == arg.chars().nth(1))
+		  self.flags.iter().find(|f| f.short == arg.chars().nth(1))
 	      } else {
 		  flagparse.args.push(arg.to_owned());
 		  continue;
 	      };
 
-	      let flag: &Flag = if let Some(_flag) = flag {
-		  _flag
-	      } else {
-		  return Err(CliError::InvalidFlag(arg.to_owned()));
-	      };
+	      let flag: &Flag = flag.ok_or(CliError::InvalidFlag(arg.to_owned()))?;
 
 	      flagparse.flags.push(flag.clone());
 	  }
 
-	  Ok(())
+	  Ok(flagparse)
       }
   }
-
 #+end_src
 
-#+RESULTS:
-: error: Could not compile `cargoZ2zXKP`.
-
 What's new
+- Variable shadowing
 - Enum can hold values (enums are more like unions)
 
 * 14. Get info from FlagParse
 
 #+begin_src rust
+  /// 14.rs
+
   #[derive(Default)]
   pub struct FlagParse {
       flags: Vec<Flag>,
@@ -906,7 +875,6 @@ What's new
   }
 
   impl FlagParse {
-
       pub fn get_flag(&self, long: &str) -> bool {
 	  self.flags.iter().find(|f| f.long.eq(long)).is_some()
       }
@@ -914,12 +882,40 @@ What's new
       pub fn args(&self) -> &Vec<String> {
 	  &self.args
       }
+  }
 
+  fn main() {
+      let args: Vec<String> = std::env::args().collect();
+
+      let cli = Cli {
+	  program_name: "my cli".to_string(),
+	  flags: vec![
+	      FlagBuilder::new("verbose".into())
+		  .short('v')
+		  .help("enable verbose logging mode".into())
+		  .required()
+		  .build()
+		  .unwrap(),
+	      FlagBuilder::new("help".into()).short('h').build().unwrap(),
+	  ],
+      };
+
+      let flagparse = cli.run(&args).unwrap();
+
+      if flagparse.get_flag("help") {
+	  println!("this is the help message");
+	  return;
+      }
+
+      for arg in flagparse.args() {
+	  if flagparse.get_flag("verbose") {
+	      println!("argument: {}", arg);
+	  } else {
+	      println!("{}", arg);
+	  }
+      }
   }
 #+end_src
-
-#+RESULTS:
-: error: Could not compile `cargokNbdNb`.
 
 * We are Done!
 

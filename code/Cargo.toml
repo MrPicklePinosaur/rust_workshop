@@ -43,4 +43,24 @@ path = "8a.rs"
 name = "8b"
 path = "8b.rs"
 
+[[bin]]
+name = "11"
+path = "11.rs"
+
+[[bin]]
+name = "13a"
+path = "13a.rs"
+
+[[bin]]
+name = "13b"
+path = "13b.rs"
+
+[[bin]]
+name = "13c"
+path = "13c.rs"
+
+[[bin]]
+name = "14"
+path = "14.rs"
+
 [dependencies]
