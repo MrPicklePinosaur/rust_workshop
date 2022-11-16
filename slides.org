@@ -173,6 +173,8 @@ Topics to cover
 * 1. Hello world
 
 #+begin_src rust
+  /// 1.rs
+
   fn main() {
       println!("hello from rust!");
   }
@@ -188,6 +190,8 @@ What's new
 * 2. Get environment variables
 
 #+begin_src rust
+  /// 2.rs
+
   fn main() {
       let args: Vec<String> = std::env::args().collect();
       println!("arguments {:?}", args);
@@ -206,6 +210,8 @@ What's new
 * 3. Structs
 
 #+begin_src rust
+  /// 3.rs
+
   pub struct Cli {
       pub program_name: String,
   }
@@ -231,6 +237,8 @@ What's new
 * 4. Functions on structs
 
 #+begin_src rust
+  /// 4.rs
+
   pub struct Cli {
       pub program_name: String,
   }
@@ -260,33 +268,120 @@ What's new
 - References
 - Why no type annotation on `my_cli`? (turbofish provides explicit type for generic function)
 
-* 5. If and match
+* 5. Reading an argument
+
+** The Option Type
 
 #+begin_src rust
   pub struct Cli {
       pub program_name: String,
   }
 
+  // Signature of `Option` type
+  enum MyOption<T> {
+      Some(T),
+      None
+  }
+
   impl Cli {
       pub fn run(&self, args: &Vec<String>) {
-	  let mut arg_it = args.iter();
+	  let argument: Option<&String> = args.get(1);
+      }
+  }
 
-	  if let Some(program_name) = arg_it.next() {
-	      println!("program name is {}", program_name);
+  fn main() {
+      let args = std::env::args().collect::<Vec<String>>();
+
+      let my_cli = Cli {
+	  program_name: "my program".to_string(),
+      };
+      my_cli.run(&args);
+  }
+#+end_src
+
+What's new
+- enum keyword
+- Generics
+- `Option` type
+
+** If and Match
+
+#+begin_src rust
+  /// 5.rs
+
+  pub struct Cli {
+      pub program_name: String,
+  }
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) {
+	  let argument: Option<&String> = args.get(1);
+
+	  if let Some(arg) = argument {
+	      println!("argument is {}", arg);
 	  } else {
-	      println!("uh oh, we did not get a program name");
+	      println!("uh oh, we did not get an argument");
 	  }
 
-	  /*
 	  // ====== alternatively ======
-	  match arg_it.next() {
-	      Some(program_name) => {
-	      println!("program name is {}", program_name);
+	  match argument {
+	      Some(arg) => {
+		  println!("argument is {}", arg);
 	      },
-	      None => println!("uh oh, we did not get a program name");
-	      _ => unreachable!();
+	      None => {
+		  println!("uh oh, we did not get an argument"); 
+	      }
 	  }
-	  */
+      }
+  }
+
+  fn main() {
+      let args = std::env::args().collect::<Vec<String>>();
+
+      let my_cli = Cli {
+	  program_name: "my program".to_string(),
+      };
+      my_cli.run(&args);
+  }
+#+end_src
+
+What's new
+- `if let` statement
+- `match` statement (`_` for catchall)
+
+* 6. Error handling
+
+#+begin_src rust
+  /// 6.rs
+
+  pub struct Cli {
+      pub program_name: String,
+  }
+
+  // Signature of `Result` type
+  enum MyResult<T, E> {
+      Ok(T),
+      Err(E),
+  }
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+	  let argument: Option<&String> = args.get(1);
+
+	  let arg_value = if let Some(arg) = argument {
+	      println!("argument is {}", arg);
+	      arg
+	  } else {
+	      println!("uh oh, we did not get an argument");
+	      // What should we put in the ... ?
+	      // return Err(...)
+	      "error"
+	  };
+
+	  // do something with arg_value
+	  println!("the value of arg_value is {}", arg_value);
+
+	  Ok(())
       }
   }
 
@@ -301,65 +396,22 @@ What's new
 #+end_src
 
 #+RESULTS:
-: program name is target/debug/cargomjZWXu
-
-What's new
-- `mut` keyword
-- `if let` statement
-- `match` statement (`_` for catchall)
-- `Option` type
-
-* 6. Error handling
-
-#+begin_src rust
-  // Does not compile
-
-  pub struct Cli {
-      pub program_name: String,
-  }
-
-  impl Cli {
-      pub fn run(&self, args: &Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
-	  let mut arg_it = args.iter();
-
-	  let program_name = match arg_it.next() {
-	      Some(program_name) => program_name,
-	      None => {
-		  // What should we fill '...' with?
-		  return Err(...);
-	      }
-	  }
-
-	  Ok(())
-      }
-  }
-
-  fn main() {
-      let args = std::env::args().collect::<Vec<String>>();
-
-      let my_cli = Cli {
-	  program_name: "my program".to_string(),
-      };
-      my_cli.run(&args).unwrap();
-  }
-#+end_src
-
-#+RESULTS:
 : error: Could not compile `cargoYtfxB6`.
 
 What's new
-- `Result` type (don't worry about the `Box` yet, it's a place holder error type)
-- `unwrap` asserts that an `Option` is `Some(_)`, and a `Result` is `Ok(_)` (best practice is to never use `unwrap`)
+- Blocks have return values
+- `Result` type
 
 Is there an easier way to convert from an `Option` to a `Result`?
 
 * 7. Side Adventure: Implementing our own Error type
 
 #+begin_src rust
-
+  /// 7.rs
+  
   #[derive(Debug)]
   pub enum CliError {
-      NoProgramName,
+      NoArgument,
   }
 
   impl std::error::Error for CliError {}
@@ -367,63 +419,106 @@ Is there an easier way to convert from an `Option` to a `Result`?
   impl std::fmt::Display for CliError {
       fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 	  match self {
-	      Self::NoProgramName => write!(f, "Program name not supplied"),
+	      Self::NoArgument => write!(f, "Argument not supplied"),
 	  }
       }
+  }
+
+  fn main() {
+      let my_error = CliError::NoArgument;
+      println!("This is the debug formatter: {:?}", my_error);
+      println!("This is the display formatter: {}", my_error);
   }
 #+end_src
 
 #+RESULTS:
 
 What's new
-- `enum` keyword (rust enums are very power - we will explore them a bit more later)
-- Match on enum (more example of `match`'s power
 - Traits (inheritence/interfaces but a bit different) and implementing traits
 - `write!()` is very similar to `println!()`, but to a specified output 'stream'
 - `#[derive(Debug)]` is example of a derive macro, it auto generates the code to implement the `Debug` trait
 
 * 8. Using our Error type
 
+** Use CliError type
+
 #+begin_src rust
-  #[derive(Debug)]
-  pub enum CliError {
-      NoProgramName,
-  }
-
-  impl std::error::Error for CliError {}
-
-  impl std::fmt::Display for CliError {
-      fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-	  match self {
-	      Self::NoProgramName => write!(f, "Program name not supplied"),
-	  }
-      }
-  }
-
-  pub struct Cli {
-      pub program_name: String,
-  }
-
   impl Cli {
       pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
-	  let mut arg_it = args.iter();
-	  arg_it.next().ok_or(CliError::NoProgramName)?;
+	  let argument: Option<&String> = args.get(1);
+
+	  // Convert Option type to Result type
+	  let arg_value: Result<&String, CliError> = if let Some(arg) = argument {
+	      println!("argument is {}", arg);
+	      Ok(arg)
+	  } else {
+	      println!("uh oh, we did not get an argument");
+	      Err(CliError::NoArgument)
+	  };
+
+	  // do a bunch of other stuff
+	  println!("arg_value is: {:?}", arg_value);
 
 	  Ok(())
       }
   }
+#+end_src
 
-  fn main() {
-      let args = std::env::args().collect::<Vec<String>>();
+** Grab the value inside
 
-      let my_cli = Cli {
-	  program_name: "my program".to_string(),
-      };
-      my_cli.run(&args).unwrap();
+#+begin_src rust
+  /// 8a.rs
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
+	  let argument: Option<&String> = args.get(1);
+
+	  // Convert Option type to Result type
+	  let arg_value: Result<&String, CliError> = if let Some(arg) = argument {
+	      println!("argument is {}", arg);
+	      Ok(arg)
+	  } else {
+	      println!("uh oh, we did not get an argument");
+	      Err(CliError::NoArgument)
+	  };
+
+	  println!("arg_value is: {:?}", arg_value);
+
+	  // Either get the value or TERMINATE function
+	  let unwrapped_arg_value = match arg_value {
+	      Ok(arg) => arg,
+	      Err(e) => {
+		  return Err(e);
+	      }
+	  };
+
+	  // do a bunch of other stuff
+	  println!("unwrapped_arg value is: {}", unwrapped_arg_value);
+
+	  Ok(())
+      }
   }
 #+end_src
 
-#+RESULTS:
+** A simpler way
+
+#+begin_src rust
+  /// 8b.rs
+
+  impl Cli {
+      pub fn run(&self, args: &Vec<String>) -> Result<(), CliError> {
+	  let argument: Option<&String> = args.get(1);
+
+	  // Convert Option type to Result type
+	  let unwrapped_arg_value = argument.ok_or(CliError::NoArgument)?;
+
+	  // do a bunch of other stuff
+	  println!("unwrapped_arg value is: {}", unwrapped_arg_value);
+
+	  Ok(())
+      }
+  }
+#+end_src
 
 What's new
 - `ok_or` transforms an `Option` type to a `Result` type
@@ -830,7 +925,6 @@ What's new
 
 What we did not cover
 - modules
-- generics
 - lifetimes
 - defining your own traits
 - writing tests
