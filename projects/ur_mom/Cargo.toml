@@ -8,4 +8,5 @@ repository = "https://github.com/MrPicklePinosaur/rust_workshop"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-argparse = { path = "../../argparse" }
+argparse = { git = "https://github.com/MrPicklePinosaur/rust_workshop" }
+rand = "0.8.5"

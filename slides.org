@@ -936,3 +936,69 @@ What we did not cover
 - lifetimes
 - defining your own traits
 - writing tests
+
+* Sample Project
+
+Now we use the library we just built to make something (possibly) useful.
+
+Here are some potential project ideas
+- guess the number
+- rock paper scisors
+- calculator
+
+** Project creation
+
+Get started by creating another project:
+#+begin_src sh
+  cargo new <project_name>
+#+end_src
+
+** Project configuration
+
+Now add our argparsing library as a dependency by editing `Cargo.toml`:
+#+begin_src yaml
+  [package]
+  name = "<project_name>"
+  version = "0.1.0"
+  edition = "2021"
+
+  [dependencies]
+  argparse = { git = "https://github.com/MrPicklePinosaur/rust_workshop" }
+#+end_src
+
+** Getting started
+
+Getting help
+- https://docs.rs
+- https://doc.rust-lang.org/stable/book/ 
+
+#+begin_src rust
+  // include our library
+  use argparse::{Cli, CliError, Flag, FlagBuilder, FlagParse};
+
+  fn main() -> Result<(), CliError> {
+
+      // grab environment variables
+      let args: Vec<String> = std::env::args().collect();
+
+      // configure your cli
+      let cli = Cli {
+	  program_name: "<program_name>".to_string(),
+	  flags: vec![
+	      FlagBuilder::new("help".into()).short('h').help("display the help message".into()).build()?,
+	  ],
+      };
+
+      let flagparse = cli.run(&args)?;
+
+      if flagparse.get_flag("help") {
+	  println!("this is the help message");
+	  return Ok(());
+      }
+
+      // do more stuff here
+
+      Ok(())
+  }
+
+#+end_src
