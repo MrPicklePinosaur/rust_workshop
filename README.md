@@ -1,6 +1,11 @@
 
 <div align="center">
 
+<div>
+  <img src="dist/csc.svg" width="20%" height="auto"/>
+  <img src="dist/ferris.png" width="15%" height="auto"/>
+</div>
+
 # rust_workshop
 
 rust workshop to build an argument parser and cli for CSC Project Program
