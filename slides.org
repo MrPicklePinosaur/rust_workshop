@@ -159,16 +159,28 @@ cargo run
 Topics to cover
 - println macro
 - structs and methods on structs
+- enums
+- generics
 - visibility
 - if, if let and match statements
 - ownership
 - mutability
 - implemting traits
-- enums
 - Result and Option types
 - builder pattern
 - using crates
 - loops + iterators
+
+* What is a CLI even?
+
+#+begin_src sh
+ls -a --long homework/
+#+end_src
+
+ls: the program name
+-a: a short flag
+--long: a long flag
+homework/: an argument
 
 * 1. Hello world
 

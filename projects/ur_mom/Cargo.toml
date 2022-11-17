@@ -1,0 +1,11 @@
+[package]
+name = "ur_mom"
+version = "0.1.0"
+edition = "2021"
+authors = ["Daniel Liu"]
+description = "the most advanced ur mom generator"
+repository = "https://github.com/MrPicklePinosaur/rust_workshop"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+argparse = { path = "../../argparse" }
