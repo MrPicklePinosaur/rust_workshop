@@ -1,4 +1,4 @@
-use argparse::{Cli, CliError, Flag, FlagBuilder, FlagParse};
+use argparse::{Cli, CliError, FlagBuilder};
 use rand::seq::SliceRandom;
 
 fn main() -> Result<(), CliError> {

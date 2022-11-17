@@ -966,11 +966,21 @@ Now add our argparsing library as a dependency by editing `Cargo.toml`:
   argparse = { git = "https://github.com/MrPicklePinosaur/rust_workshop" }
 #+end_src
 
-** Getting started
+** Editor tooling
 
-Getting help
+Might want a language server for things like syntax highlight, autocompletions, etc
+
+vscode: rust-analyzer extension
+neovim: rust-analyzer with neovim-lsp
+emacs: rust mode / rustic mode
+
+** Getting help
+
 - https://docs.rs
 - https://doc.rust-lang.org/stable/book/ 
+- "Let's Get Rusty" youtube channel
+
+** Getting started
 
 #+begin_src rust
   // include our library
